@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Adminside for påmelding til Ski-Revyen 2020</title>
+</head>
+<body>
+<header></header>
+<main>
+  <article id="registrerGruppe">
+    <form id="registrerGruppeSkjema" onsubmit="regGruppe(event)">
+      <label>Gruppenavn:<input type="text" required id="inpGruppeNavn"></label>
+      <button type="submit">Registrer gruppe</button>
+    </form>
+  </article>
+  <article id="visEleverArt">
+    <table id ="visEleverTabell"></table>
+  </article>
+</main>
+<footer></footer>
+<!-- The core Firebase JS SDK is always required and must be listed first -->
+<script src="https://www.gstatic.com/firebasejs/6.1.0/firebase-app.js"></script>
+
+<!-- TODO: Add SDKs for Firebase products that you want to use
+     https://firebase.google.com/docs/web/setup#config-web-app -->
+
+<script src="https://www.gstatic.com/firebasejs/6.1.0/firebase-database.js"></script>
+
+<script>
+  // Your web app's Firebase configuration
+  var firebaseConfig = {
+    apiKey: "AIzaSyAjzup6aViAjPSMj8U1WWAZ03TjoizZBOw",
+    authDomain: "revypaameliding.firebaseapp.com",
+    databaseURL: "https://revypaameliding.firebaseio.com",
+    projectId: "revypaameliding",
+    storageBucket: "revypaameliding.appspot.com",
+    messagingSenderId: "631148301638",
+    appId: "1:631148301638:web:03704743bf07a350"
+  };
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+</script>
+<script>
+  let db = firebase.database();
+  let grupper = db.ref("grupper");
+  let elever = db.ref("elever");
+  let inpGruppeNavn = document.getElementById("inpGruppeNavn");
+  let gruppeSkjema = document.getElementById("registrerGruppeSkjema");
+
+  //Lar admin registrere en gruppe
+  function regGruppe(event) {
+    event.preventDefault();
+    grupper.push({
+      "navn": inpGruppeNavn.value,
+    });
+    gruppeSkjema.reset();
+  }
+
+  //Viser elevene som har meldt seg på
+  function visElever(snapshot) {
+
+  }
+
+  elever.on("child_added", visElever)
+</script>
+</body>
+</html>

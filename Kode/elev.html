@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Påmelding til Ski-Revyen 2020</title>
+</head>
+<body>
+<header></header>
+<main>
+  <article id="meldDegPå">
+    <form id="PåmeldingSkjema" onsubmit="regElev(event)">
+      <label>Fullt navn: <input required type="text" id="inpElevNavn"></label>
+      <label>Klasse: <input required type="text" id="inpElevKlasse"></label>
+      <label>E-post: <input required type="text" id="inpElevEpost"></label>
+      <label>Tlf<input required type="text" id="inpElevTlf"></label>
+      <label>1. Valg: <select required id="inpElev1Valg"></select></label>
+      <label>2. Valg: <select required id="inpElev2Valg"></select></label>
+      <label>3.Valg: <select required id="inpElev3Valg"></select></label>
+      <label>Kommentar: <input required type="text" id="inpElevKommentar"></label>
+      <button type="submit">Meld deg på revyen</button>
+    </form>
+  </article>
+</main>
+<footer></footer>
+<!-- The core Firebase JS SDK is always required and must be listed first -->
+<script src="https://www.gstatic.com/firebasejs/6.1.0/firebase-app.js"></script>
+
+<!-- TODO: Add SDKs for Firebase products that you want to use
+     https://firebase.google.com/docs/web/setup#config-web-app -->
+
+<script src="https://www.gstatic.com/firebasejs/6.1.0/firebase-database.js"></script>
+
+<script>
+  // Your web app's Firebase configuration
+  var firebaseConfig = {
+    apiKey: "AIzaSyAjzup6aViAjPSMj8U1WWAZ03TjoizZBOw",
+    authDomain: "revypaameliding.firebaseapp.com",
+    databaseURL: "https://revypaameliding.firebaseio.com",
+    projectId: "revypaameliding",
+    storageBucket: "revypaameliding.appspot.com",
+    messagingSenderId: "631148301638",
+    appId: "1:631148301638:web:03704743bf07a350"
+  };
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+</script>
+<script>
+  //HTML-Objekter
+  let db = firebase.database();
+  let grupper = db.ref("grupper");
+  let elever = db.ref("elever");
+  let inpElevNavn = document.getElementById("inpElevNavn");
+  let inpElevKlasse = document.getElementById("inpElevKlasse");
+  let inpElevEpost = document.getElementById("inpElevEpost");
+  let inpElevTlf = document.getElementById("inpElevTlf");
+  let inpElev1Valg = document.getElementById("inpElev1Valg");
+  let inpElev2Valg = document.getElementById("inpElev2Valg");
+  let inpElev3Valg = document.getElementById("inpElev3Valg");
+  let inpElevKommentar = document.getElementById("inpElevKommentar");
+  let PåmeldingSkjema = document.getElementById("PåmeldingSkjema");
+
+  //Henter grupper som elever kan velge mellom
+  function hentGrupper(snapshot) {
+    let gruppe = snapshot.val();
+    let gruppeKey = snapshot.key;
+    inpElev1Valg.innerHTML += `
+    <option value="${gruppeKey}">${gruppe.navn}</option>
+    `;
+    inpElev2Valg.innerHTML += `
+    <option value="${gruppeKey}">${gruppe.navn}</option>
+    `;
+    inpElev3Valg.innerHTML += `
+    <option value="${gruppeKey}">${gruppe.navn}</option>
+    `;
+  }
+
+  //Sender dataen fra skjemaet til Firebase
+  function regElev(event) {
+    event.preventDefault();
+    if(inpElev1Valg.value != inpElev2Valg.value && inpElev1Valg.value != inpElev3Valg.value && inpElev2Valg.value != inpElev3Valg.value){
+      console.log(inpElev1Valg.value, inpElev2Valg.value);
+      elever.push({
+        "navn": inpElevNavn.value,
+        "klasse": inpElevKlasse.value,
+        "epost": inpElevEpost.value,
+        "tlf": inpElevTlf.value,
+        "1Valg": inpElev1Valg.value,
+        "2Valg": inpElev2Valg.value,
+        "3Valg": inpElev3Valg.value,
+        "kommentar": inpElevKommentar.value
+      });
+    }else if(inpElev1Valg.value == inpElev2Valg.value){
+      window.alert("1. og 2. valg er like");
+    }else if(inpElev1Valg.value == inpElev3Valg.value){
+      window.alert("1. og 3. valg er like");
+    }else if(inpElev2Valg.value == inpElev3Valg.value){
+      window.alert("2. og 3. valg er like");
+    }
+  }
+
+  grupper.on("child_added", hentGrupper);
+</script>
+</body>
+</html>
