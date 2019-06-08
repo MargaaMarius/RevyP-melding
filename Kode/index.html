@@ -46,6 +46,7 @@
   let elever = db.ref("elever");
   let inpGruppeNavn = document.getElementById("inpGruppeNavn");
   let gruppeSkjema = document.getElementById("registrerGruppeSkjema");
+  let alleEleverVis = document.getElementById("visEleverTabell");
 
   //Lar admin registrere en gruppe
   function regGruppe(event) {
@@ -58,7 +59,20 @@
 
   //Viser elevene som har meldt seg på
   function visElever(snapshot) {
-
+    let elev = snapshot.val();
+    let elevKey = snapshot.key;
+    alleEleverVis.innerHTML += `
+    <tr>
+      <td>${elev.navn}</td>
+      <td>${elev.klasse}</td>
+      <td>${elev.epost}</td>
+      <td>${elev.tlf}</td>
+      <td>${elev.Valg1}</td>
+      <td>${elev.Valg2}</td>
+      <td>${elev.Valg3}</td>
+      <td>${elev.kommentar}</td>
+    </tr>
+    `;
   }
 
   elever.on("child_added", visElever)
