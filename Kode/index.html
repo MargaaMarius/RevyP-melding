@@ -61,18 +61,30 @@
   function visElever(snapshot) {
     let elev = snapshot.val();
     let elevKey = snapshot.key;
-    alleEleverVis.innerHTML += `
-    <tr>
-      <td>${elev.navn}</td>
-      <td>${elev.klasse}</td>
-      <td>${elev.epost}</td>
-      <td>${elev.tlf}</td>
-      <td>${elev.Valg1}</td>
-      <td>${elev.Valg2}</td>
-      <td>${elev.Valg3}</td>
-      <td>${elev.kommentar}</td>
-    </tr>
-    `;
+    let valg1ref = db.ref("grupper/" + elev.Valg1);
+    valg1ref.once("value", function(snapshotV1){
+      let valg1obj = snapshotV1.val();
+      let valg2ref = db.ref("grupper/" + elev.Valg2);
+      valg2ref.once("value", function(snapshotV2){
+        let valg2obj = snapshotV2.val();
+        let valg3ref = db.ref("grupper/" + elev.Valg3);
+        valg3ref.once("value", function (snapshotV3) {
+          let valg3obj = snapshotV3.val();
+          alleEleverVis.innerHTML += `
+           <tr>
+            <td>${elev.navn}</td>
+            <td>${elev.klasse}</td>
+            <td>${elev.epost}</td>
+            <td>${elev.tlf}</td>
+            <td>${valg1obj.navn}</td>
+            <td>${valg2obj.navn}</td>
+            <td>${valg3obj.navn}</td>
+            <td>${elev.kommentar}</td>
+          </tr>
+          `;
+        });
+      });
+    });
   }
 
   elever.on("child_added", visElever)
