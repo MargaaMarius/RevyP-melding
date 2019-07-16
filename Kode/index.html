@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title>Adminside for påmelding til Ski-Revyen 2020</title>
+    <link rel="stylesheet"
+          type="text/css"
+          href="RevyP-meldingCSS.css">
 </head>
 <body>
 <header></header>
@@ -14,7 +17,19 @@
     </form>
   </article>
   <article id="visEleverArt">
-    <table id ="visEleverTabell"></table>
+    <table>
+      <thead>
+        <th>Navn</th>
+        <th>Klasse</th>
+        <th>E-mail</th>
+        <th>Telefonnummer</th>
+        <th>1. Valg</th>
+        <th>2. Valg</th>
+        <th>3. Valg</th>
+        <th>Kommentar</th>
+      </thead>
+      <tbody id ="visEleverTabell"></tbody>
+    </table>
   </article>
 </main>
 <footer></footer>
@@ -71,7 +86,7 @@
         valg3ref.once("value", function (snapshotV3) {
           let valg3obj = snapshotV3.val();
           alleEleverVis.innerHTML += `
-           <tr>
+           <tr draggable="true" id="${elevKey}">
             <td>${elev.navn}</td>
             <td>${elev.klasse}</td>
             <td>${elev.epost}</td>
@@ -80,11 +95,55 @@
             <td>${valg2obj.navn}</td>
             <td>${valg3obj.navn}</td>
             <td>${elev.kommentar}</td>
+            <td>
+              <form onsubmit="flyttElev(event, ${elevKey})">
+                <select id="velgGruppe${elevKey+'('+elev.navn+')'}">
+                  <option>Legg til i en gruppe</option>
+                  <option value="fjern">Fjern</option>
+                </select>
+               </form>
+             </td>
           </tr>
           `;
         });
       });
     });
+  }
+
+  //Lager en tabell for hver gruppe der medlemmer og antall vises
+  function visGruppeTabeller(snapshot){
+    let gruppe = snapshot.val();
+    let gruppeKey = snapshot.key;
+    let gruppeAntall = 0;
+    alleEleverVis.innerHTML += `
+    <table>
+      <thead>
+      <th>Navn</th>
+      <th>Klasse</th>
+      <th>E-post</th>
+      <th>Tlf</th>
+      <th>1.Valg</th>
+      <th>2.Valg</th>
+      <th>3.Valg</th>
+      <th>Kommentar</th>
+      <th>Endre/Fjern</th>
+      </thead>
+      <tbody id="tabellFor${gruppekey+'('+gruppe.navn}+')'">
+      </tbody>
+    </table>
+    `;
+    elever
+      .orderByChild("gruppe")
+      .equalTo(gruppeKey)
+      .on("child_added", function (snapshotElever) {
+        let elev = snapshotElever.val();
+        let elevKey = snapshotElever.Key;
+      })
+  }
+
+  //Funksjon som lytter på en innsending av et av skjemaene som lar admin fjerne/fjerne fra en gruppe/legge til i en gruppe
+  function flyttElev(event, elev){
+
   }
 
   elever.on("child_added", visElever)
