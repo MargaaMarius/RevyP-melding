@@ -60,6 +60,7 @@
   let db = firebase.database();
   let grupper = db.ref("grupper");
   let elever = db.ref("elever");
+  let tabellID = "";
   let inpGruppeNavn = document.getElementById("inpGruppeNavn");
   let gruppeSkjema = document.getElementById("registrerGruppeSkjema");
   let alleEleverVis = document.getElementById("visEleverTabell");
@@ -75,20 +76,22 @@
   }
 
   //Viser elevene som har meldt seg på
-  function visElever(snapshot) {
+  function hentElever(snapshot) {
+    let tabellIDF = tabellID;
+    let tabell = document.getElementById(tabellIDF);
     let elevVis = snapshot.val();
     let elevVisKey = snapshot.key;
     let valg1ref = db.ref("grupper/" + elevVis.Valg1);
-    valg1ref.once("value", function(snapshotV1){
+    valg1ref.once("value", function (snapshotV1) {
       let valg1obj = snapshotV1.val();
       let valg2ref = db.ref("grupper/" + elevVis.Valg2);
-      valg2ref.once("value", function(snapshotV2){
+      valg2ref.once("value", function (snapshotV2) {
         let valg2obj = snapshotV2.val();
         let valg3ref = db.ref("grupper/" + elevVis.Valg3);
         valg3ref.once("value", function (snapshotV3) {
           let valg3obj = snapshotV3.val();
-          alleEleverVis.innerHTML += `
-           <tr draggable="true" id="${elevVisKey}">
+          tabell.innerHTML += `
+           <tr>
             <td>${elevVis.navn}</td>
             <td>${elevVis.klasse}</td>
             <td>${elevVis.epost}</td>
@@ -98,47 +101,49 @@
             <td>${valg3obj.navn}</td>
             <td>${elevVis.kommentar}</td>
             <td>
-              <form onsubmit="flyttElev(event, ${elevVisKey})">
-                <select id="velgGruppe${elevVisKey}(${elevVis.navn})">
+              <form onsubmit="flyttElevFor(event, '${elevVisKey}')">
+                <select id="velgGruppe${tabellIDF}${elevVisKey}(${elevVis.navn})">
                   <option>Legg til i en gruppe</option>
-                  <option value="fjern">Fjern</option>
+                  <option value="slett">Slett elev</option>
+                  <option value="fjern">Fjern fra gruppen</option>
                 </select>
                 <button type="submit">OK</button>
                </form>
              </td>
           </tr>
           `;
-          grupper.on("child_added", function(gruppesnapshot){
-            let gruppeValg = gruppesnapshot.val();
-            let gruppeValgKey = gruppesnapshot.key;
-            let gruppeValgSelect = document.getElementById("velgGruppe"+elevVisKey+"("+elevVis.navn+")");
-            switch (gruppeValgKey){
-              case elevVis.Valg1:
-              gruppeValgSelect.innerHTML +=`
+            grupper.on("child_added", function (gruppesnapshot) {
+              let gruppeValgSelect = document.getElementById("velgGruppe" + tabellIDF + elevVisKey + "(" + elevVis.navn + ")");
+              let gruppeValg = gruppesnapshot.val();
+              let gruppeValgKey = gruppesnapshot.key;
+              switch (gruppeValgKey) {
+                case elevVis.Valg1:
+                  gruppeValgSelect.innerHTML += `
                 <option value="${gruppeValgKey}">${gruppeValg.navn} (1. Valg)</option>
                 `;
-              break;
-              case elevVis.Valg2:
-                gruppeValgSelect.innerHTML +=`
+                  console.log("hei");
+                  break;
+                case elevVis.Valg2:
+                  gruppeValgSelect.innerHTML += `
                 <option value="${gruppeValgKey}">${gruppeValg.navn} (2. Valg)</option>
                 `;
-                break;
-              case elevVis.Valg3:
-                gruppeValgSelect.innerHTML +=`
+                  break;
+                case elevVis.Valg3:
+                  gruppeValgSelect.innerHTML += `
                 <option value="${gruppeValgKey}">${gruppeValg.navn} (3. Valg)</option>
                 `;
-                break;
-              default:
-                gruppeValgSelect.innerHTML +=`
+                  break;
+                default:
+                  gruppeValgSelect.innerHTML += `
                 <option value="${gruppeValgKey}">${gruppeValg.navn}</option>
                 `;
-                break;
-            }
+                  break;
+              }
+            });
           })
         });
       });
-    });
-  }
+    }
 
   //Lager en tabell for hver gruppe der medlemmer og antall vises
   function visGruppeTabeller(snapshot){
@@ -153,35 +158,61 @@
       <th>Navn</th>
       <th>Klasse</th>
       <th>E-post</th>
-      <th>Tlf</th>
+      <th>Telefonnummer</th>
       <th>1.Valg</th>
       <th>2.Valg</th>
       <th>3.Valg</th>
       <th>Kommentar</th>
       <th>Endre/Fjern</th>
       </thead>
-      <tbody id="tabellFor${gruppeVisTabKey+'('+gruppeVisTab.navn}+')'">
+      <tbody id="tabellFor${gruppeVisTabKey}(${gruppeVisTab.navn})">
       </tbody>
     </table>
     `;
-    elever
-      .orderByChild("gruppe")
+    tabellID = "tabellFor"+gruppeVisTabKey+"("+gruppeVisTab.navn+")";
+    elever.orderByChild("gruppe")
       .equalTo(gruppeVisTabKey)
-      .on("child_added", function (snapshotElever) {
-        let elev = snapshotElever.val();
-        let elevKey = snapshotElever.Key;
-      })
+      .on("child_added", hentElever);
   }
 
   //Funksjon som lytter på en innsending av et av skjemaene som lar admin fjerne/fjerne fra en gruppe/legge til i en gruppe
-  function flyttElev(event, elevKey){
-  let elevObj = db.ref("elev/"+elevKey);
-  elevObj.once("value", function(snapshot){
-
-  });
+  function flyttElev(event, elevFlyttKey, gruppeFjernKey){
+    event.preventDefault();
+    let elevFlyttSelelct = document.getElementById("velgGruppe"+elevFlyttKey+"("+elevFlytt.navn+")");
+    let elevObj = db.ref("elever/"+elevFlyttKey);
+    switch(elevFlyttSelelct){
+      case "slett":
+        elevObj.remove();
+        break;
+      case "fjern":
+        elevObjData = {
+          "gruppe": "NA"
+        };
+        elevObj.update(elevObjData);
+        break;
+      default:
+        elevObj.once("value", function(snapshot){
+          let elevFlytt = snapshot.val();
+          let elevFlyttSelelct = document.getElementById("velgGruppe"+elevFlyttKey+"("+elevFlytt.navn+")");
+          let elevFlyttObj = elever.child(elevFlyttKey);
+          let elevFlyttData = {
+            "gruppe" : elevFlyttSelelct.value
+          };
+          elevFlyttObj.update(elevFlyttData);
+          alleEleverVis.innerHTML = ``;
+          hentAlleElever();
+          grupper.on("child_added", visGruppeTabeller);
+        });
+        break;
+    }
   }
 
-  elever.on("child_added", visElever);
+  function hentAlleElever(){
+    tabellID = "visEleverTabell";
+    elever.on("child_added", hentElever);
+  }
+
+  hentAlleElever();
   grupper.on("child_added", visGruppeTabeller);
 </script>
 </body>
