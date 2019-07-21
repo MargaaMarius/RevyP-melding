@@ -27,6 +27,7 @@
         <th>2. Valg</th>
         <th>3. Valg</th>
         <th>Kommentar</th>
+        <th></th>
       </thead>
       <tbody id ="visEleverTabell"></tbody>
     </table>
@@ -62,6 +63,7 @@
   let inpGruppeNavn = document.getElementById("inpGruppeNavn");
   let gruppeSkjema = document.getElementById("registrerGruppeSkjema");
   let alleEleverVis = document.getElementById("visEleverTabell");
+  let tabellArticle = document.getElementById("visEleverArt");
 
   //Lar admin registrere en gruppe
   function regGruppe(event) {
@@ -74,37 +76,65 @@
 
   //Viser elevene som har meldt seg på
   function visElever(snapshot) {
-    let elev = snapshot.val();
-    let elevKey = snapshot.key;
-    let valg1ref = db.ref("grupper/" + elev.Valg1);
+    let elevVis = snapshot.val();
+    let elevVisKey = snapshot.key;
+    let valg1ref = db.ref("grupper/" + elevVis.Valg1);
     valg1ref.once("value", function(snapshotV1){
       let valg1obj = snapshotV1.val();
-      let valg2ref = db.ref("grupper/" + elev.Valg2);
+      let valg2ref = db.ref("grupper/" + elevVis.Valg2);
       valg2ref.once("value", function(snapshotV2){
         let valg2obj = snapshotV2.val();
-        let valg3ref = db.ref("grupper/" + elev.Valg3);
+        let valg3ref = db.ref("grupper/" + elevVis.Valg3);
         valg3ref.once("value", function (snapshotV3) {
           let valg3obj = snapshotV3.val();
           alleEleverVis.innerHTML += `
-           <tr draggable="true" id="${elevKey}">
-            <td>${elev.navn}</td>
-            <td>${elev.klasse}</td>
-            <td>${elev.epost}</td>
-            <td>${elev.tlf}</td>
+           <tr draggable="true" id="${elevVisKey}">
+            <td>${elevVis.navn}</td>
+            <td>${elevVis.klasse}</td>
+            <td>${elevVis.epost}</td>
+            <td>${elevVis.tlf}</td>
             <td>${valg1obj.navn}</td>
             <td>${valg2obj.navn}</td>
             <td>${valg3obj.navn}</td>
-            <td>${elev.kommentar}</td>
+            <td>${elevVis.kommentar}</td>
             <td>
-              <form onsubmit="flyttElev(event, ${elevKey})">
-                <select id="velgGruppe${elevKey+'('+elev.navn+')'}">
+              <form onsubmit="flyttElev(event, ${elevVisKey})">
+                <select id="velgGruppe${elevVisKey}(${elevVis.navn})">
                   <option>Legg til i en gruppe</option>
                   <option value="fjern">Fjern</option>
                 </select>
+                <button type="submit">OK</button>
                </form>
              </td>
           </tr>
           `;
+          grupper.on("child_added", function(gruppesnapshot){
+            let gruppeValg = gruppesnapshot.val();
+            let gruppeValgKey = gruppesnapshot.key;
+            let gruppeValgSelect = document.getElementById("velgGruppe"+elevVisKey+"("+elevVis.navn+")");
+            switch (gruppeValgKey){
+              case elevVis.Valg1:
+              gruppeValgSelect.innerHTML +=`
+                <option value="${gruppeValgKey}">${gruppeValg.navn} (1. Valg)</option>
+                `;
+              break;
+              case elevVis.Valg2:
+                gruppeValgSelect.innerHTML +=`
+                <option value="${gruppeValgKey}">${gruppeValg.navn} (2. Valg)</option>
+                `;
+                break;
+              case elevVis.Valg3:
+                gruppeValgSelect.innerHTML +=`
+                <option value="${gruppeValgKey}">${gruppeValg.navn} (3. Valg)</option>
+                `;
+                break;
+              default:
+                gruppeValgSelect.innerHTML +=`
+                <option value="${gruppeValgKey}">${gruppeValg.navn}</option>
+                `;
+                break;
+            }
+          })
         });
       });
     });
@@ -112,10 +142,12 @@
 
   //Lager en tabell for hver gruppe der medlemmer og antall vises
   function visGruppeTabeller(snapshot){
-    let gruppe = snapshot.val();
-    let gruppeKey = snapshot.key;
+    let gruppeVisTab = snapshot.val();
+    let gruppeVisTabKey = snapshot.key;
     let gruppeAntall = 0;
-    alleEleverVis.innerHTML += `
+    tabellArticle.innerHTML += `
+    <p>${gruppeVisTab.navn}</p>
+    <p id="Antall${gruppeVisTabKey}">Antall: ${gruppeAntall}</p>
     <table>
       <thead>
       <th>Navn</th>
@@ -128,13 +160,13 @@
       <th>Kommentar</th>
       <th>Endre/Fjern</th>
       </thead>
-      <tbody id="tabellFor${gruppekey+'('+gruppe.navn}+')'">
+      <tbody id="tabellFor${gruppeVisTabKey+'('+gruppeVisTab.navn}+')'">
       </tbody>
     </table>
     `;
     elever
       .orderByChild("gruppe")
-      .equalTo(gruppeKey)
+      .equalTo(gruppeVisTabKey)
       .on("child_added", function (snapshotElever) {
         let elev = snapshotElever.val();
         let elevKey = snapshotElever.Key;
@@ -142,11 +174,15 @@
   }
 
   //Funksjon som lytter på en innsending av et av skjemaene som lar admin fjerne/fjerne fra en gruppe/legge til i en gruppe
-  function flyttElev(event, elev){
+  function flyttElev(event, elevKey){
+  let elevObj = db.ref("elev/"+elevKey);
+  elevObj.once("value", function(snapshot){
 
+  });
   }
 
-  elever.on("child_added", visElever)
+  elever.on("child_added", visElever);
+  grupper.on("child_added", visGruppeTabeller);
 </script>
 </body>
 </html>
