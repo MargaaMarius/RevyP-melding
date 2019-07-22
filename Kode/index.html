@@ -5,7 +5,7 @@
     <title>Adminside for påmelding til Ski-Revyen 2020</title>
     <link rel="stylesheet"
           type="text/css"
-          href="Kode/RevyP-meldingCSS.css">
+          href="RevyP-meldingCSS.css">
 </head>
 <body>
 <header></header>
@@ -29,7 +29,7 @@
         <th>Kommentar</th>
         <th></th>
       </thead>
-      <tbody id ="visEleverTabell"></tbody>
+      <tbody id ="visEleverTabell" class="elevTabell"></tbody>
     </table>
   </article>
 </main>
@@ -101,7 +101,7 @@
             <td>${valg3obj.navn}</td>
             <td>${elevVis.kommentar}</td>
             <td>
-              <form onsubmit="flyttElevFor(event, '${elevVisKey}')">
+              <form onsubmit="flyttElev(event, '${elevVisKey}', '${tabellIDF}')">
                 <select id="velgGruppe${tabellIDF}${elevVisKey}(${elevVis.navn})">
                   <option>Legg til i en gruppe</option>
                   <option value="slett">Slett elev</option>
@@ -121,7 +121,6 @@
                   gruppeValgSelect.innerHTML += `
                 <option value="${gruppeValgKey}">${gruppeValg.navn} (1. Valg)</option>
                 `;
-                  console.log("hei");
                   break;
                 case elevVis.Valg2:
                   gruppeValgSelect.innerHTML += `
@@ -151,23 +150,25 @@
     let gruppeVisTabKey = snapshot.key;
     let gruppeAntall = 0;
     tabellArticle.innerHTML += `
-    <p>${gruppeVisTab.navn}</p>
-    <p id="Antall${gruppeVisTabKey}">Antall: ${gruppeAntall}</p>
-    <table>
-      <thead>
-      <th>Navn</th>
-      <th>Klasse</th>
-      <th>E-post</th>
-      <th>Telefonnummer</th>
-      <th>1.Valg</th>
-      <th>2.Valg</th>
-      <th>3.Valg</th>
-      <th>Kommentar</th>
-      <th>Endre/Fjern</th>
-      </thead>
-      <tbody id="tabellFor${gruppeVisTabKey}(${gruppeVisTab.navn})">
-      </tbody>
-    </table>
+    <article class="gruppeArticle">
+      <p>${gruppeVisTab.navn}</p>
+      <p  id="Antall${gruppeVisTabKey}">Antall: ${gruppeAntall}</p>
+      <table>
+        <thead>
+          <th>Navn</th>
+          <th>Klasse</th>
+          <th>E-post</th>
+          <th>Telefonnummer</th>
+          <th>1.Valg</th>
+          <th>2.Valg</th>
+          <th>3.Valg</th>
+          <th>Kommentar</th>
+          <th>Endre/Fjern</th>
+        </thead>
+        <tbody id="tabellFor${gruppeVisTabKey}(${gruppeVisTab.navn})" class="elevTabell">
+        </tbody>
+      </table>
+    </article>
     `;
     tabellID = "tabellFor"+gruppeVisTabKey+"("+gruppeVisTab.navn+")";
     elever.orderByChild("gruppe")
@@ -176,44 +177,48 @@
   }
 
   //Funksjon som lytter på en innsending av et av skjemaene som lar admin fjerne/fjerne fra en gruppe/legge til i en gruppe
-  function flyttElev(event, elevFlyttKey, gruppeFjernKey){
+  function flyttElev(event, elevFlyttKey, tabellIDF) {
     event.preventDefault();
-    let elevFlyttSelelct = document.getElementById("velgGruppe"+elevFlyttKey+"("+elevFlytt.navn+")");
-    let elevObj = db.ref("elever/"+elevFlyttKey);
-    switch(elevFlyttSelelct){
-      case "slett":
-        elevObj.remove();
-        break;
-      case "fjern":
-        elevObjData = {
-          "gruppe": "NA"
-        };
-        elevObj.update(elevObjData);
-        break;
-      default:
-        elevObj.once("value", function(snapshot){
-          let elevFlytt = snapshot.val();
-          let elevFlyttSelelct = document.getElementById("velgGruppe"+elevFlyttKey+"("+elevFlytt.navn+")");
+    let elevObj = db.ref("elever/" + elevFlyttKey);
+    elevObj.once("value", function (snapshot) {
+      let elevFlytt = snapshot.val();
+      let elevFlyttSelect = document.getElementById("velgGruppe" + tabellIDF + elevFlyttKey + "(" + elevFlytt.navn + ")");
+      switch (elevFlyttSelect.value) {
+        case "slett":
+          elevObj.remove();
+          break;
+        case "fjern":
+          elevObjData = {
+            "gruppe": "NA"
+          };
+          elevObj.update(elevObjData);
+          break;
+        default:
           let elevFlyttObj = elever.child(elevFlyttKey);
           let elevFlyttData = {
-            "gruppe" : elevFlyttSelelct.value
+            "gruppe": elevFlyttSelect.value
           };
           elevFlyttObj.update(elevFlyttData);
           alleEleverVis.innerHTML = ``;
           hentAlleElever();
-          grupper.on("child_added", visGruppeTabeller);
-        });
-        break;
-    }
+          break;
+      }
+    });
   }
 
+  //henter alle elever til alle tabeller. Tømmer først alle tabeller, så fyller dem
   function hentAlleElever(){
     tabellID = "visEleverTabell";
+    let alleTabeller = document.getElementsByClassName("elevTabell");
+    let antallTabeller = alleTabeller.length;
+    for (i=0;i<antallTabeller;i++){
+      alleTabeller[i].innerHTML = ``;
+    }
     elever.on("child_added", hentElever);
+    grupper.on("child_added", visGruppeTabeller);
   }
 
   hentAlleElever();
-  grupper.on("child_added", visGruppeTabeller);
 </script>
 </body>
 </html>

@@ -1,7 +1,10 @@
 table{
-  border: solid black 2px;
+  border: solid black 20px;
   border-collapse: collapse;
 }
 td{
   border: solid black 2px;
+}
+.gruppeArticle{
+  margin-top: 5vh;
 }
