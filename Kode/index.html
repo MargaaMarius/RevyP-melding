@@ -19,14 +19,14 @@
   <article id="visEleverArt">
     <table>
       <thead>
-        <th>Navn</th>
-        <th>Klasse</th>
-        <th>E-mail</th>
-        <th>Telefonnummer</th>
-        <th>1. Valg</th>
-        <th>2. Valg</th>
-        <th>3. Valg</th>
-        <th>Kommentar</th>
+        <th><button onclick="sorterTabell(event, 'visEleverTabell', 'navn')">Navn</button></th>
+        <th><button onclick="sorterTabell(event, 'visEleverTabell', 'klasse')">Klasse</button></th>
+        <th><button onclick="sorterTabell(event, 'visEleverTabell', 'epost')">E-Mail</button></th>
+        <th><button onclick="sorterTabell(event, 'visEleverTabell', 'tlf')">Telefonnummer</button></th>
+        <th><button>1.Valg</button></th>
+        <th><button>2.Valg</button></th>
+        <th><button>3.Valg</button></th>
+        <th><button onclick="sorterTabell(event, 'visEleverArt', 'kommentar')">Kommentar</button></th>
         <th></th>
       </thead>
       <tbody id ="visEleverTabell" class="elevTabell"></tbody>
@@ -155,15 +155,15 @@
       <p  id="Antall${gruppeVisTabKey}">Antall: ${gruppeAntall}</p>
       <table>
         <thead>
-          <th>Navn</th>
-          <th>Klasse</th>
-          <th>E-post</th>
-          <th>Telefonnummer</th>
-          <th>1.Valg</th>
-          <th>2.Valg</th>
-          <th>3.Valg</th>
-          <th>Kommentar</th>
-          <th>Endre/Fjern</th>
+          <th><button onclick="sorterTabell(event, 'tabellFor${gruppeVisTabKey}(${gruppeVisTab.navn})', 'navn')">Navn</button></th>
+          <th><button onclick="sorterTabell(event, 'tabellFor${gruppeVisTabKey}(${gruppeVisTab.navn})', 'klasse')">Klasse</button></th>
+          <th><button onclick="sorterTabell(event, 'tabellFor${gruppeVisTabKey}(${gruppeVisTab.navn})', 'epost')">E-mail</button></th>
+          <th><button onclick="sorterTabell(event, 'tabellFor${gruppeVisTabKey}(${gruppeVisTab.navn})', 'tlf')">Telefonnummer</button></th>
+          <th><button>1.Valg</button></th>
+          <th><button>2.Valg</button></th>
+          <th><button>3.Valg</button></th>
+          <th><button onclick="sorterTabell(event, 'tabellFor${gruppeVisTabKey}(${gruppeVisTab.navn})', 'kommentar')">Kommentar</button></th>
+          <th></th>
         </thead>
         <tbody id="tabellFor${gruppeVisTabKey}(${gruppeVisTab.navn})" class="elevTabell">
         </tbody>
@@ -186,12 +186,14 @@
       switch (elevFlyttSelect.value) {
         case "slett":
           elevObj.remove();
+          hentAlleElever();
           break;
         case "fjern":
           elevObjData = {
             "gruppe": "NA"
           };
           elevObj.update(elevObjData);
+          hentAlleElever();
           break;
         default:
           let elevFlyttObj = elever.child(elevFlyttKey);
@@ -216,6 +218,15 @@
     }
     elever.on("child_added", hentElever);
     grupper.on("child_added", visGruppeTabeller);
+  }
+
+  //Sorterer tabellene
+  function sorterTabell (event, tabell, egenskap){
+    event.preventDefault();
+    tabellID = tabell;
+    let sorterTabell = document.getElementById(tabell);
+    sorterTabell.innerHTML = ``;
+    elever.orderByChild(egenskap).on("child_added",  hentElever);
   }
 
   hentAlleElever();

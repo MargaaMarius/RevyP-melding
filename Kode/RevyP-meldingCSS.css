@@ -1,5 +1,5 @@
 table{
-  border: solid black 20px;
+  border: solid black 2px;
   border-collapse: collapse;
 }
 td{
@@ -7,4 +7,10 @@ td{
 }
 .gruppeArticle{
   margin-top: 5vh;
+}
+th button{
+  width : 100%;
+  height : 100%;
+  background: none;
+  border: none;
 }
