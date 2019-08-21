@@ -1,5 +1,6 @@
 body{
   background-color: #f2f542;
+  font-family: "Open Sans Extrabold", sans-serif;
 }
 
 /*main{
@@ -30,6 +31,15 @@ form *{
 }
 
 form input{
+  width: 100%;
+}
+
+button{
+  font-family: "Open Sans Extrabold", sans-serif;
+  color: white;
+  background-color: #992df7;
+  border: none;
+  height: 40px;
   width: 100%;
 }
 
