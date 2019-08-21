@@ -1,6 +1,27 @@
-main{
+body{
+  background-color: #f2f542;
+}
+
+/*main{
   display: grid;
   grid-template-columns: 30vw 1fr 30vw;
+}*/
+
+main article{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+main article img{
+  align-self: center;
+  width: 30vw;
+}
+
+main form{
+  width: 40%;
+  align-self: center;
+
 }
 
 form *{
@@ -8,10 +29,16 @@ form *{
   margin-bottom: 2vh;
 }
 
-main form{
+form input{
   width: 100%;
 }
 
-form input{
-  width: 100%;
+@media(max-width: 900px){
+  main article img{
+    width: 70vw;
+  }
+  main article form{
+    width: 70vw;
+  }
+
 }
