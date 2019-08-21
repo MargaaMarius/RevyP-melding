@@ -5,7 +5,7 @@
     <title>Adminside for påmelding til Ski-Revyen 2020</title>
     <link rel="stylesheet"
           type="text/css"
-          href="RevyP-meldingCSS.css">
+          href="RevyP-meldingCSSAdmin.css">
 </head>
 <body>
 <header></header>
@@ -17,6 +17,16 @@
     </form>
   </article>
   <article id="visEleverArt">
+    <p>Vis elever som vil være med i:
+      <form onsubmit="sorterTabellValg(event, 'visEleverTabell')">
+        <select id="sorterGruppeSelect">
+          <option>Velg gruppe</option>
+        </select>
+        <button type="submit">
+          Søk
+        </button>
+      </form>
+    </p>
     <table>
       <thead>
         <th><button onclick="sorterTabell(event, 'visEleverTabell', 'navn')">Navn</button></th>
@@ -65,6 +75,7 @@
   let gruppeSkjema = document.getElementById("registrerGruppeSkjema");
   let alleEleverVis = document.getElementById("visEleverTabell");
   let tabellArticle = document.getElementById("visEleverArt");
+  let gruppeSelect = document.getElementById("sorterGruppeSelect");
 
   //Lar admin registrere en gruppe
   function regGruppe(event) {
@@ -210,12 +221,12 @@
 
   //henter alle elever til alle tabeller. Tømmer først alle tabeller, så fyller dem
   function hentAlleElever(){
-    tabellID = "visEleverTabell";
     let alleTabeller = document.getElementsByClassName("elevTabell");
     let antallTabeller = alleTabeller.length;
     for (i=0;i<antallTabeller;i++){
       alleTabeller[i].innerHTML = ``;
     }
+    tabellID = "visEleverTabell";
     elever.on("child_added", hentElever);
     grupper.on("child_added", visGruppeTabeller);
   }
@@ -229,7 +240,38 @@
     elever.orderByChild(egenskap).on("child_added",  hentElever);
   }
 
+  //Henter gruppene til selecten slik at man kan søke
+  function hentGrupperTilSelect (snapshotGrupperTilSelect){
+    let selectGruppe = snapshotGrupperTilSelect.val();
+    let selectGruppeKey = snapshotGrupperTilSelect.key;
+    gruppeSelect.innerHTML += `
+    <option value="${selectGruppeKey}">${selectGruppe.navn}</option>
+    `;
+    console.log(gruppeSelect);
+  }
+
+  //Sorterer tabellene etter 1., 2. eller 3. valg
+  function sorterTabellValg (event, tabell){
+    event.preventDefault();
+    tabellID = tabell;
+    let sorterTabell = document.getElementById(tabell);
+    sorterTabell.innerHTML = ``;
+    elever
+      .orderByChild("Valg1")
+      .equalTo(gruppeSelect.value)
+      .on("child_added", hentElever);
+    elever
+      .orderByChild("Valg2")
+      .equalTo(gruppeSelect.value)
+      .on("child_added", hentElever);
+    elever
+      .orderByChild("Valg3")
+      .equalTo(gruppeSelect.value)
+      .on("child_added", hentElever);
+  }
+
   hentAlleElever();
+  grupper.on("child_added", hentGrupperTilSelect);
 </script>
 </body>
 </html>

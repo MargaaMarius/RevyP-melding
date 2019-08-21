@@ -1,0 +1,17 @@
+main{
+  display: grid;
+  grid-template-columns: 30vw 1fr 30vw;
+}
+
+form *{
+  display: block;
+  margin-bottom: 2vh;
+}
+
+main form{
+  width: 100%;
+}
+
+form input{
+  width: 100%;
+}
