@@ -22,7 +22,6 @@ img{
 main form{
   width: 40%;
   align-self: center;
-
 }
 
 form *{
@@ -37,6 +36,7 @@ form input{
 select{
   width: 100%;
 }
+
 button{
   font-family: "Open Sans Extrabold", sans-serif;
   color: white;

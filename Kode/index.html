@@ -86,7 +86,7 @@
     gruppeSkjema.reset();
   }
 
-  //Viser elevene som har meldt seg på
+  //Viser elevene som har meldt seg på. Brukes for alle tabeller, der tabellID endres før funksjonen kalles, slik at elevene blir plassert i riktig tabell
   function hentElever(snapshot) {
     let tabellIDF = tabellID;
     let tabell = document.getElementById(tabellIDF);
@@ -101,6 +101,8 @@
         let valg3ref = db.ref("grupper/" + elevVis.Valg3);
         valg3ref.once("value", function (snapshotV3) {
           let valg3obj = snapshotV3.val();
+          console.log(elevVis.navn);
+          console.log(tabell);
           tabell.innerHTML += `
            <tr>
             <td>${elevVis.navn}</td>
@@ -123,7 +125,8 @@
              </td>
           </tr>
           `;
-            grupper.on("child_added", function (gruppesnapshot) {
+          //Henter grupper til select-elementet som skal brukes til å sette eleven i en gruppe
+          grupper.on("child_added", function (gruppesnapshot) {
               let gruppeValgSelect = document.getElementById("velgGruppe" + tabellIDF + elevVisKey + "(" + elevVis.navn + ")");
               let gruppeValg = gruppesnapshot.val();
               let gruppeValgKey = gruppesnapshot.key;
@@ -247,7 +250,6 @@
     gruppeSelect.innerHTML += `
     <option value="${selectGruppeKey}">${selectGruppe.navn}</option>
     `;
-    console.log(gruppeSelect);
   }
 
   //Sorterer tabellene etter 1., 2. eller 3. valg
