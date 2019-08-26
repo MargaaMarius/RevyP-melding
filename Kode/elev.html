@@ -16,8 +16,28 @@
     <form id="PåmeldingSkjema" onsubmit="regElev(event)">
       <label>Fullt navn: <input required type="text" id="inpElevNavn"></label>
       <label>Klasse: <input required type="text" id="inpElevKlasse"></label>
+      <label id="fodselLabel">Fødselsdato:
+        <select required id="inpElevDatoDag"></select>
+        <select required id="inpElevDatoMon">
+          <option value="01">Januar</option>
+          <option value="02">Februar</option>
+          <option value="03">Mars</option>
+          <option value="04">April</option>
+          <option value="05">Mai</option>
+          <option value="06">Juni</option>
+          <option value="07">Juli</option>
+          <option value="08">August</option>
+          <option value="09">September</option>
+          <option value="10">Oktober</option>
+          <option value="11">November</option>
+          <option value="12">Desember</option>
+        </select>
+        <select required id="inpElevDatoAar"></select>
+      </label>
       <label>E-post: <input required type="text" id="inpElevEpost"></label>
       <label>Tlf:<input required type="text" id="inpElevTlf"></label>
+      <label>Adresse:<input required type="text" id="inpElevAdr"></label>
+      <label>Postnummer:<input required type="text" id="inpElevPost"></label>
       <label>1. Valg: <select required id="inpElev1Valg"></select></label>
       <label>2. Valg: <select required id="inpElev2Valg"></select></label>
       <label>3.Valg: <select required id="inpElev3Valg"></select></label>
@@ -57,13 +77,38 @@
   let elever = db.ref("elever");
   let inpElevNavn = document.getElementById("inpElevNavn");
   let inpElevKlasse = document.getElementById("inpElevKlasse");
+  let inpElevDatoDag = document.getElementById("inpElevDatoDag");
+  let inpElevDatoMon = document.getElementById("inpElevDatoMon");
+  let inpElevDatoAar = document.getElementById("inpElevDatoAar");
   let inpElevEpost = document.getElementById("inpElevEpost");
   let inpElevTlf = document.getElementById("inpElevTlf");
+  let inpElevAdr = document.getElementById("inpElevAdr");
+  let inpElevPost = document.getElementById("inpElevPost");
   let inpElev1Valg = document.getElementById("inpElev1Valg");
   let inpElev2Valg = document.getElementById("inpElev2Valg");
   let inpElev3Valg = document.getElementById("inpElev3Valg");
   let inpElevKommentar = document.getElementById("inpElevKommentar");
-  let PåmeldingSkjema = document.getElementById("PåmeldingSkjema");
+  let PaameldingSkjema = document.getElementById("PåmeldingSkjema");
+
+  //Fyller inn selectene for dag og år, fordi jeg er for lat til å gjøre det for hånd
+  function fyll(){
+    for (i=1;i<32;i++){
+      if(i<10){
+        inpElevDatoDag.innerHTML += `
+      <option value="0${i}">0${i}</option>
+      `;
+      }else{
+        inpElevDatoDag.innerHTML += `
+      <option value="${i}">${i}</option>
+      `;
+      }
+    }
+    for (a=1990;a<2005;a++){
+      inpElevDatoAar.innerHTML += `
+      <option value="${a}">${a}</option>
+      `;
+    }
+  }
 
   //Henter grupper som elever kan velge mellom
   function hentGrupper(snapshot) {
@@ -85,12 +130,27 @@
     event.preventDefault();
     //Sørger for at de tre valgene av grupper er ulike, og sier ifra dersom de ikke er det
     if(inpElev1Valg.value != inpElev2Valg.value && inpElev1Valg.value != inpElev3Valg.value && inpElev2Valg.value != inpElev3Valg.value){
-      console.log(inpElev1Valg.value, inpElev2Valg.value);
+      let fodselsdag = inpElevDatoDag.value + "." + inpElevDatoMon.value + "." + inpElevDatoAar.value;
+      console.log(inpElevNavn.value);
+      console.log(inpElevKlasse.value);
+      console.log(fodselsdag);
+      console.log(inpElevEpost.value);
+      console.log(inpElevTlf.value);
+      console.log(inpElevAdr.value);
+      console.log(inpElevPost.value);
+      console.log(inpElev1Valg.value);
+      console.log(inpElev2Valg.value);
+      console.log(inpElev3Valg.value);
+      console.log(inpElevKommentar.value);
+
       elever.push({
         "navn": inpElevNavn.value,
         "klasse": inpElevKlasse.value,
+        "fodselsdato": fodselsdag,
         "epost": inpElevEpost.value,
         "tlf": inpElevTlf.value,
+        "adresse": inpElevAdr.value,
+        "postnummer": inpElevPost.value,
         "Valg1": inpElev1Valg.value,
         "Valg2": inpElev2Valg.value,
         "Valg3": inpElev3Valg.value,
@@ -109,12 +169,13 @@
       .orderByChild("navn")
       .equalTo(inpElevNavn.value)
       .on("child_added", sjekkElev);
-    PåmeldingSkjema.reset();
+    PaameldingSkjema.reset();
   }
 
   function sjekkElev(snapshot){
     alert("Påmeldingen din er registrert!");
   }
+  fyll();
   grupper.on("child_added", hentGrupper);
 </script>
 </body>

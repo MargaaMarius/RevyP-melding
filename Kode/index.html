@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Dette er adminsiden til påmeldingen til Ski Revyen 2020. Her skal adminene se alle elevene som har meldt seg på, og plassere dem i grupper. Jeg har lagd en tabell
+   for alle elever, og har en funksjon som lager en tabell for hver grupppe. I tabellene er det en select som adminene kan bruke til å velge hvilken gruppe elevene skal
+   plasseres i. Her skal de også kunne fjerne en elev fra gruppa si og slette dem helt. -->
     <meta charset="UTF-8">
     <title>Adminside for påmelding til Ski-Revyen 2020</title>
     <link rel="stylesheet"
@@ -36,7 +39,8 @@
         <th><button>1.Valg</button></th>
         <th><button>2.Valg</button></th>
         <th><button>3.Valg</button></th>
-        <th><button onclick="sorterTabell(event, 'visEleverArt', 'kommentar')">Kommentar</button></th>
+        <th><button onclick="sorterTabell(event, 'visEleverTabell', 'kommentar')">Kommentar</button></th>
+        <th><button onclick="sorterTabell(event, 'visEleverTabell', 'gruppe')">Gruppe</button></th>
         <th></th>
       </thead>
       <tbody id ="visEleverTabell" class="elevTabell"></tbody>
@@ -88,10 +92,12 @@
 
   //Viser elevene som har meldt seg på. Brukes for alle tabeller, der tabellID endres før funksjonen kalles, slik at elevene blir plassert i riktig tabell
   function hentElever(snapshot) {
+    //Får å kunne bruke en funksjon til alle tabellene, definerer jeg tabellID før hentElever. I selve funksjonen lages variabelen tabellIDF som lik tabellID, siden tabellID hele tiden endres av andre funksjoner. I hentElever brukes tabellIDF til å vise til tabellen jeg vil at elevene skal puttes i.
     let tabellIDF = tabellID;
     let tabell = document.getElementById(tabellIDF);
     let elevVis = snapshot.val();
     let elevVisKey = snapshot.key;
+    //Siden valgene er lagret som fremmednøkler, må vi hente navnene på gruppene som er valgt med funksjoner
     let valg1ref = db.ref("grupper/" + elevVis.Valg1);
     valg1ref.once("value", function (snapshotV1) {
       let valg1obj = snapshotV1.val();
@@ -101,9 +107,11 @@
         let valg3ref = db.ref("grupper/" + elevVis.Valg3);
         valg3ref.once("value", function (snapshotV3) {
           let valg3obj = snapshotV3.val();
-          console.log(elevVis.navn);
-          console.log(tabell);
-          tabell.innerHTML += `
+          //Viser "ingen gruppe" under gruppe dersom det ikke er noen
+          if (elevVis.gruppe == "1NA"){
+            console.log(elevVis.navn);
+            console.log(tabell);
+            tabell.innerHTML += `
            <tr>
             <td>${elevVis.navn}</td>
             <td>${elevVis.klasse}</td>
@@ -113,6 +121,7 @@
             <td>${valg2obj.navn}</td>
             <td>${valg3obj.navn}</td>
             <td>${elevVis.kommentar}</td>
+            <td>Ingen gruppe</td>
             <td>
               <form onsubmit="flyttElev(event, '${elevVisKey}', '${tabellIDF}')">
                 <select id="velgGruppe${tabellIDF}${elevVisKey}(${elevVis.navn})">
@@ -125,11 +134,12 @@
              </td>
           </tr>
           `;
-          //Henter grupper til select-elementet som skal brukes til å sette eleven i en gruppe
-          grupper.on("child_added", function (gruppesnapshot) {
+            //Henter grupper til select-elementet som skal brukes til å sette eleven i en gruppe
+            grupper.on("child_added", function (gruppesnapshot) {
               let gruppeValgSelect = document.getElementById("velgGruppe" + tabellIDF + elevVisKey + "(" + elevVis.navn + ")");
               let gruppeValg = gruppesnapshot.val();
               let gruppeValgKey = gruppesnapshot.key;
+              //Legger til info dersom gruppa er et av valgene eleven har valgt
               switch (gruppeValgKey) {
                 case elevVis.Valg1:
                   gruppeValgSelect.innerHTML += `
@@ -153,12 +163,71 @@
                   break;
               }
             });
-          })
+            //Viser gruppenavnet hvis eleven er i en gruppe
+          }else {
+            let gruppeRef = db.ref("grupper/" + elevVis.gruppe);
+            gruppeRef.once("value", function (snapshotGruppe) {
+              let gruppeObj = snapshotGruppe.val();
+              console.log(elevVis.navn);
+              console.log(tabell);
+              tabell.innerHTML += `
+           <tr>
+            <td>${elevVis.navn}</td>
+            <td>${elevVis.klasse}</td>
+            <td>${elevVis.epost}</td>
+            <td>${elevVis.tlf}</td>
+            <td>${valg1obj.navn}</td>
+            <td>${valg2obj.navn}</td>
+            <td>${valg3obj.navn}</td>
+            <td>${elevVis.kommentar}</td>
+            <td>${gruppeObj.navn}</td>
+            <td>
+              <form onsubmit="flyttElev(event, '${elevVisKey}', '${tabellIDF}')">
+                <select id="velgGruppe${tabellIDF}${elevVisKey}(${elevVis.navn})">
+                  <option>Legg til i en gruppe</option>
+                  <option value="slett">Slett elev</option>
+                  <option value="fjern">Fjern fra gruppen</option>
+                </select>
+                <button type="submit">OK</button>
+               </form>
+             </td>
+          </tr>
+          `;
+              //Henter grupper til select-elementet som skal brukes til å sette eleven i en gruppe
+              grupper.on("child_added", function (gruppesnapshot) {
+                let gruppeValgSelect = document.getElementById("velgGruppe" + tabellIDF + elevVisKey + "(" + elevVis.navn + ")");
+                let gruppeValg = gruppesnapshot.val();
+                let gruppeValgKey = gruppesnapshot.key;
+                switch (gruppeValgKey) {
+                  case elevVis.Valg1:
+                    gruppeValgSelect.innerHTML += `
+                <option value="${gruppeValgKey}">${gruppeValg.navn} (1. Valg)</option>
+                `;
+                    break;
+                  case elevVis.Valg2:
+                    gruppeValgSelect.innerHTML += `
+                <option value="${gruppeValgKey}">${gruppeValg.navn} (2. Valg)</option>
+                `;
+                    break;
+                  case elevVis.Valg3:
+                    gruppeValgSelect.innerHTML += `
+                <option value="${gruppeValgKey}">${gruppeValg.navn} (3. Valg)</option>
+                `;
+                    break;
+                  default:
+                    gruppeValgSelect.innerHTML += `
+                <option value="${gruppeValgKey}">${gruppeValg.navn}</option>
+                `;
+                    break;
+                }
+              });
+            });
+          }})
         });
       });
     }
 
-  //Lager en tabell for hver gruppe der medlemmer og antall vises
+  //Lager en tabell for hver gruppe der medlemmer og antall vises (antall fungerer ikke enda, har ikke lagt det til
   function visGruppeTabeller(snapshot){
     let gruppeVisTab = snapshot.val();
     let gruppeVisTabKey = snapshot.key;
@@ -184,6 +253,7 @@
       </table>
     </article>
     `;
+    //Nå er tabellen for gruppa lagd, delen under fyller inn med elevene som er en del av gruppa. tabellID endes for å fylle inn i riktig tabell
     tabellID = "tabellFor"+gruppeVisTabKey+"("+gruppeVisTab.navn+")";
     elever.orderByChild("gruppe")
       .equalTo(gruppeVisTabKey)
@@ -198,17 +268,20 @@
       let elevFlytt = snapshot.val();
       let elevFlyttSelect = document.getElementById("velgGruppe" + tabellIDF + elevFlyttKey + "(" + elevFlytt.navn + ")");
       switch (elevFlyttSelect.value) {
+        //Sletter eleven fra databasen
         case "slett":
           elevObj.remove();
           hentAlleElever();
           break;
+          //Setter elevens gruppe til standarden, som sier at eleven ikke er en del av en gruppe
         case "fjern":
           elevObjData = {
-            "gruppe": "NA"
+            "gruppe": "1NA"
           };
           elevObj.update(elevObjData);
           hentAlleElever();
           break;
+          //Endrer gruppa til eleven
         default:
           let elevFlyttObj = elever.child(elevFlyttKey);
           let elevFlyttData = {
@@ -234,7 +307,7 @@
     grupper.on("child_added", visGruppeTabeller);
   }
 
-  //Sorterer tabellene
+  //Sorterer tabellene etter elevenes attributter, unntatt elevens valg.
   function sorterTabell (event, tabell, egenskap){
     event.preventDefault();
     tabellID = tabell;
@@ -258,6 +331,7 @@
     tabellID = tabell;
     let sorterTabell = document.getElementById(tabell);
     sorterTabell.innerHTML = ``;
+    //Henter først elevene som har valget som 1. valg, så 2. og til slutt 3.
     elever
       .orderByChild("Valg1")
       .equalTo(gruppeSelect.value)
@@ -273,6 +347,8 @@
   }
 
   hentAlleElever();
+
+  //Henter grupper til selecten der man kan søke etter de som vil være en del av en gruppe
   grupper.on("child_added", hentGrupperTilSelect);
 </script>
 </body>
