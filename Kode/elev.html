@@ -34,6 +34,10 @@
         </select>
         <select required id="inpElevDatoAar"></select>
       </label>
+      <label>Skole:<select required id="inpElevSkole">
+        <option value="Ski">Ski</option>
+        <option value="Drømtorp">Drømtorp</option>
+      </select></label>
       <label>E-post: <input required type="text" id="inpElevEpost"></label>
       <label>Tlf:<input required type="text" id="inpElevTlf"></label>
       <label>Adresse:<input required type="text" id="inpElevAdr"></label>
@@ -77,6 +81,7 @@
   let elever = db.ref("elever");
   let inpElevNavn = document.getElementById("inpElevNavn");
   let inpElevKlasse = document.getElementById("inpElevKlasse");
+  let inpElevSkole = document.getElementById("inpElevSkole");
   let inpElevDatoDag = document.getElementById("inpElevDatoDag");
   let inpElevDatoMon = document.getElementById("inpElevDatoMon");
   let inpElevDatoAar = document.getElementById("inpElevDatoAar");
@@ -146,6 +151,7 @@
       elever.push({
         "navn": inpElevNavn.value,
         "klasse": inpElevKlasse.value,
+        "skole": inpElevSkole.value,
         "fodselsdato": fodselsdag,
         "epost": inpElevEpost.value,
         "tlf": inpElevTlf.value,

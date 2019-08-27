@@ -34,6 +34,7 @@
       <thead>
       <th><button onclick="sorterTabell(event, 'visEleverTabell', 'navn')">Navn</button></th>
       <th><button onclick="sorterTabell(event, 'visEleverTabell', 'klasse')">Klasse</button></th>
+      <th><button onclick="sorterTabell(event, 'visEleverTabell', 'skole'">Skole</button></th>
       <th><button onclick="sorterTabell(event, 'visEleverTabell', 'fodselsdag'">Fødselsdag</button></th>
       <th><button onclick="sorterTabell(event, 'visEleverTabell', 'adresse'">Adresse</button></th>
       <th><button onclick="sorterTabell(event, 'visEleverTabell', 'postnummer'">Postnummer</button></th>
@@ -112,12 +113,11 @@
           let valg3obj = snapshotV3.val();
           //Viser "ingen gruppe" under gruppe dersom det ikke er noen
           if (elevVis.gruppe == "1NA"){
-            //console.log(elevVis.navn);
-            //console.log(tabell);
             tabell.innerHTML += `
            <tr>
             <td>${elevVis.navn}</td>
             <td>${elevVis.klasse}</td>
+            <td>${elevVis.skole}</td>
             <td>${elevVis.fodselsdato}</td>
             <td>${elevVis.adresse}</td>
             <td>${elevVis.postnummer}</td>
@@ -145,12 +145,11 @@
             let gruppeRef = db.ref("grupper/" + elevVis.gruppe);
             gruppeRef.once("value", function (snapshotGruppe) {
               let gruppeObj = snapshotGruppe.val();
-              //console.log(elevVis.navn);
-              //console.log(tabell);
               tabell.innerHTML += `
            <tr>
             <td>${elevVis.navn}</td>
             <td>${elevVis.klasse}</td>
+            <td>${elevVis.skole}</td>
             <td>${elevVis.fodselsdato}</td>
             <td>${elevVis.adresse}</td>
             <td>${elevVis.postnummer}</td>
@@ -192,6 +191,7 @@
         <thead>
           <th><button onclick="sorterTabell(event, 'tabellFor${gruppeVisTabKey}(${gruppeVisTab.navn})', 'navn')">Navn</button></th>
           <th><button onclick="sorterTabell(event, 'tabellFor${gruppeVisTabKey}(${gruppeVisTab.navn})', 'klasse')">Klasse</button></th>
+          <th><button onclick="sorterTabell(event, 'tabellFor${gruppeVisTabKey}(${gruppeVisTab.navn})', 'skole')">Skole</button></th>
           <th><button onclick="sorterTabell(event, 'tabellFor${gruppeVisTabKey}(${gruppeVisTab.navn})', 'fodselsdag')">Fødselsdag</button></th>
           <th><button onclick="sorterTabell(event, 'tabellFor${gruppeVisTabKey}(${gruppeVisTab.navn})', 'adresse')">Adresse</button></th>
           <th><button onclick="sorterTabell(event, 'tabellFor${gruppeVisTabKey}(${gruppeVisTab.navn})', 'postnummer')">Postnummer</button></th>
