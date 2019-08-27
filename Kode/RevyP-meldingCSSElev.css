@@ -37,6 +37,19 @@ select{
   width: 100%;
 }
 
+#fodselLabel{
+  display: grid;
+  grid-template-columns: 20% 35% 35%;
+  grid-column-gap: 5%;
+}
+
+#fodselLabel p{
+  grid-column: span 3;
+}
+#fodselLabel select{
+  display: inline;
+}
+
 button{
   font-family: "Open Sans Extrabold", sans-serif;
   color: white;
@@ -74,5 +87,6 @@ button{
   }
   button{
     font-size: 2vh;
+    height: 3vh;
   }
 }
