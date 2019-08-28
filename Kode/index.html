@@ -34,10 +34,10 @@
       <thead>
       <th><button onclick="sorterTabell(event, 'visEleverTabell', 'navn')">Navn</button></th>
       <th><button onclick="sorterTabell(event, 'visEleverTabell', 'klasse')">Klasse</button></th>
-      <th><button onclick="sorterTabell(event, 'visEleverTabell', 'skole'">Skole</button></th>
-      <th><button onclick="sorterTabell(event, 'visEleverTabell', 'fodselsdag'">Fødselsdag</button></th>
-      <th><button onclick="sorterTabell(event, 'visEleverTabell', 'adresse'">Adresse</button></th>
-      <th><button onclick="sorterTabell(event, 'visEleverTabell', 'postnummer'">Postnummer</button></th>
+      <th><button onclick="sorterTabell(event, 'visEleverTabell', 'skole')">Skole</button></th>
+      <th><button onclick="sorterTabell(event, 'visEleverTabell', 'fodselsdag')">Fødselsdag</button></th>
+      <th><button onclick="sorterTabell(event, 'visEleverTabell', 'adresse')">Adresse</button></th>
+      <th><button onclick="sorterTabell(event, 'visEleverTabell', 'postnummer')">Postnummer</button></th>
       <th><button onclick="sorterTabell(event, 'visEleverTabell', 'epost')">E-Mail</button></th>
       <th><button onclick="sorterTabell(event, 'visEleverTabell', 'tlf')">Telefonnummer</button></th>
       <th><button>1.Valg</button></th>
@@ -317,10 +317,18 @@
     }
   }
 
-  hentAlleElever();
+  function delayGrupper(){
+    grupper.on("child_added", hentGrupperTilSelect);
 
-  //Henter grupper til selecten der man kan søke etter de som vil være en del av en gruppe
-  grupper.on("child_added", hentGrupperTilSelect);
+  }
+  function start(){
+    hentAlleElever();
+    setTimeout(delayGrupper, 5000);
+  }
+
+  start()
+
+
 </script>
 </body>
 </html>
