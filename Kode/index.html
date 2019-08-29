@@ -20,32 +20,32 @@
     </form>
   </article>
   <article id="visEleverArt">
-    <p>Vis elever som vil være med i:
-    <form onsubmit="sorterTabellValg(event, 'visEleverTabell')">
+    <p>Vis elever som vil være med i:</p>
+    <form onsubmit="sorterTabellValg(event)">
       <select id="sorterGruppeSelect">
-        <option>Velg gruppe</option>
+        <option value="visAlle">Vis alle</option>
       </select>
       <button type="submit">
         Søk
       </button>
     </form>
-    </p>
+    <p>Totalt antall påmeldte: <div id="totAntallDiv"></div></p>
     <table>
       <thead>
-      <th><button onclick="sorterTabell(event, 'visEleverTabell', 'navn')">Navn</button></th>
-      <th><button onclick="sorterTabell(event, 'visEleverTabell', 'klasse')">Klasse</button></th>
-      <th><button onclick="sorterTabell(event, 'visEleverTabell', 'skole')">Skole</button></th>
-      <th><button onclick="sorterTabell(event, 'visEleverTabell', 'fodselsdag')">Fødselsdag</button></th>
-      <th><button onclick="sorterTabell(event, 'visEleverTabell', 'adresse')">Adresse</button></th>
-      <th><button onclick="sorterTabell(event, 'visEleverTabell', 'postnummer')">Postnummer</button></th>
-      <th><button onclick="sorterTabell(event, 'visEleverTabell', 'epost')">E-Mail</button></th>
-      <th><button onclick="sorterTabell(event, 'visEleverTabell', 'tlf')">Telefonnummer</button></th>
-      <th><button>1.Valg</button></th>
-      <th><button>2.Valg</button></th>
-      <th><button>3.Valg</button></th>
-      <th><button onclick="sorterTabell(event, 'visEleverTabell', 'kommentar')">Kommentar</button></th>
-      <th><button onclick="sorterTabell(event, 'visEleverTabell', 'gruppe')">Gruppe</button></th>
-      <th></th>
+        <th><button onclick="sorterTabell(event, 'visEleverTabell', 'navn')">Navn</button></th>
+        <th><button onclick="sorterTabell(event, 'visEleverTabell', 'klasse')">Klasse</button></th>
+        <th><button onclick="sorterTabell(event, 'visEleverTabell', 'skole')">Skole</button></th>
+        <th><button onclick="sorterTabell(event, 'visEleverTabell', 'fodselsdag')">Fødselsdag</button></th>
+        <th><button onclick="sorterTabell(event, 'visEleverTabell', 'adresse')">Adresse</button></th>
+        <th><button onclick="sorterTabell(event, 'visEleverTabell', 'postnummer')">Postnummer</button></th>
+        <th><button onclick="sorterTabell(event, 'visEleverTabell', 'epost')">E-Mail</button></th>
+        <th><button onclick="sorterTabell(event, 'visEleverTabell', 'tlf')">Telefonnummer</button></th>
+        <th><button>1.Valg</button></th>
+        <th><button>2.Valg</button></th>
+        <th><button>3.Valg</button></th>
+        <th><button onclick="sorterTabell(event, 'visEleverTabell', 'kommentar')">Kommentar</button></th>
+        <th><button onclick="sorterTabell(event, 'visEleverTabell', 'gruppe')">Gruppe</button></th>
+        <th></th>
       </thead>
       <tbody id ="visEleverTabell" class="elevTabell"></tbody>
     </table>
@@ -78,12 +78,10 @@
   let db = firebase.database();
   let grupper = db.ref("grupper");
   let elever = db.ref("elever");
-  let tabellID = "";
   let inpGruppeNavn = document.getElementById("inpGruppeNavn");
   let gruppeSkjema = document.getElementById("registrerGruppeSkjema");
   let alleEleverVis = document.getElementById("visEleverTabell");
   let tabellArticle = document.getElementById("visEleverArt");
-  let gruppeSelect = document.getElementById("sorterGruppeSelect");
 
   //Lar admin registrere en gruppe
   function regGruppe(event) {
@@ -95,25 +93,25 @@
   }
 
   //Viser elevene som har meldt seg på. Brukes for alle tabeller, der tabellID endres før funksjonen kalles, slik at elevene blir plassert i riktig tabell
-  function hentElever(snapshot) {
-    //Får å kunne bruke en funksjon til alle tabellene, definerer jeg tabellID før hentElever. I selve funksjonen lages variabelen tabellIDF som lik tabellID, siden tabellID hele tiden endres av andre funksjoner. I hentElever brukes tabellIDF til å vise til tabellen jeg vil at elevene skal puttes i.
-    let tabellIDF = tabellID;
-    let tabell = document.getElementById(tabellIDF);
-    let elevVis = snapshot.val();
-    let elevVisKey = snapshot.key;
-    //Siden valgene er lagret som fremmednøkler, må vi hente navnene på gruppene som er valgt med funksjoner
-    let valg1ref = db.ref("grupper/" + elevVis.Valg1);
-    valg1ref.once("value", function (snapshotV1) {
-      let valg1obj = snapshotV1.val();
-      let valg2ref = db.ref("grupper/" + elevVis.Valg2);
-      valg2ref.once("value", function (snapshotV2) {
-        let valg2obj = snapshotV2.val();
-        let valg3ref = db.ref("grupper/" + elevVis.Valg3);
-        valg3ref.once("value", function (snapshotV3) {
-          let valg3obj = snapshotV3.val();
-          //Viser "ingen gruppe" under gruppe dersom det ikke er noen
-          if (elevVis.gruppe == "1NA"){
-            tabell.innerHTML += `
+  function hentEleverCallback(tabellIDF) {
+    return function(snapshot) {
+      //Får å kunne bruke en funksjon til alle tabellene, definerer jeg tabellID før hentElever. I selve funksjonen lages variabelen tabellIDF som lik tabellID, siden tabellID hele tiden endres av andre funksjoner. I hentElever brukes tabellIDF til å vise til tabellen jeg vil at elevene skal puttes i.
+      let tabell = document.getElementById(tabellIDF);
+      let elevVis = snapshot.val();
+      let elevVisKey = snapshot.key;
+      //Siden valgene er lagret som fremmednøkler, må vi hente navnene på gruppene som er valgt med funksjoner
+      let valg1ref = db.ref("grupper/" + elevVis.Valg1);
+      valg1ref.once("value", function (snapshotV1) {
+        let valg1obj = snapshotV1.val();
+        let valg2ref = db.ref("grupper/" + elevVis.Valg2);
+        valg2ref.once("value", function (snapshotV2) {
+          let valg2obj = snapshotV2.val();
+          let valg3ref = db.ref("grupper/" + elevVis.Valg3);
+          valg3ref.once("value", function (snapshotV3) {
+            let valg3obj = snapshotV3.val();
+            //Viser "ingen gruppe" under gruppe dersom det ikke er noen
+            if (elevVis.gruppe === "1NA") {
+              tabell.innerHTML += `
            <tr>
             <td>${elevVis.navn}</td>
             <td>${elevVis.klasse}</td>
@@ -140,12 +138,12 @@
              </td>
           </tr>
           `;
-            //Viser gruppenavnet hvis eleven er i en gruppe
-          }else {
-            let gruppeRef = db.ref("grupper/" + elevVis.gruppe);
-            gruppeRef.once("value", function (snapshotGruppe) {
-              let gruppeObj = snapshotGruppe.val();
-              tabell.innerHTML += `
+              //Viser gruppenavnet hvis eleven er i en gruppe
+            } else {
+              let gruppeRef = db.ref("grupper/" + elevVis.gruppe);
+              gruppeRef.once("value", function (snapshotGruppe) {
+                let gruppeObj = snapshotGruppe.val();
+                tabell.innerHTML += `
            <tr>
             <td>${elevVis.navn}</td>
             <td>${elevVis.klasse}</td>
@@ -172,16 +170,22 @@
              </td>
           </tr>
           `;
-            });
-          }})
+              });
+            }
+          })
+        });
       });
-    });
+    }
   }
 
-  //Lager en tabell for hver gruppe der medlemmer og antall vises (antall fungerer ikke enda, har ikke lagt det til
+  //Lager en tabell for hver gruppe der medlemmer og antall vises (antall fungerer ikke enda, har ikke lagt det til). Legger også inn
   function visGruppeTabeller(snapshot){
     let gruppeVisTab = snapshot.val();
     let gruppeVisTabKey = snapshot.key;
+    let gruppeSelect = document.getElementById("sorterGruppeSelect");
+    gruppeSelect.innerHTML += `
+    <option value="${gruppeVisTabKey}">${gruppeVisTab.navn}</option>
+    `;
     let gruppeAntall = 0;
     tabellArticle.innerHTML += `
     <article class="gruppeArticle">
@@ -213,7 +217,7 @@
     tabellID = "tabellFor"+gruppeVisTabKey+"("+gruppeVisTab.navn+")";
     elever.orderByChild("gruppe")
       .equalTo(gruppeVisTabKey)
-      .on("child_added", hentElever);
+      .on("child_added", hentEleverCallback("tabellFor"+gruppeVisTabKey+"("+gruppeVisTab.navn+")"));
   }
 
   //Funksjon som lytter på en innsending av et av skjemaene som lar admin fjerne/fjerne fra en gruppe/legge til i en gruppe
@@ -258,8 +262,7 @@
     for (i=0;i<antallTabeller;i++){
       alleTabeller[i].innerHTML = ``;
     }
-    tabellID = "visEleverTabell";
-    elever.on("child_added", hentElever);
+    elever.on("child_added", hentEleverCallback("visEleverTabell"));
     grupper.on("child_added", visGruppeTabeller);
     grupper.on("child_added", hentGrupperTilElevValg);
   }
@@ -267,10 +270,9 @@
   //Sorterer tabellene etter elevenes attributter, unntatt elevens valg.
   function sorterTabell (event, tabell, egenskap){
     event.preventDefault();
-    tabellID = tabell;
     let sorterTabell = document.getElementById(tabell);
     sorterTabell.innerHTML = ``;
-    elever.orderByChild(egenskap).on("child_added",  hentElever);
+    elever.orderByChild(egenskap).on("child_added",  hentEleverCallback(tabell));
   }
 
   //Henter gruppene til selecten slik at man kan søke
@@ -283,24 +285,30 @@
   }
 
   //Sorterer tabellene etter 1., 2. eller 3. valg
-  function sorterTabellValg (event, tabell){
+  function sorterTabellValg (event){
     event.preventDefault();
-    tabellID = tabell;
-    let sorterTabell = document.getElementById(tabell);
-    sorterTabell.innerHTML = ``;
-    //Henter først elevene som har valget som 1. valg, så 2. og til slutt 3.
-    elever
-      .orderByChild("Valg1")
-      .equalTo(gruppeSelect.value)
-      .on("child_added", hentElever);
-    elever
-      .orderByChild("Valg2")
-      .equalTo(gruppeSelect.value)
-      .on("child_added", hentElever);
-    elever
-      .orderByChild("Valg3")
-      .equalTo(gruppeSelect.value)
-      .on("child_added", hentElever);
+    let gruppeSelect = document.getElementById("sorterGruppeSelect");
+    let alleEleverVis = document.getElementById("visEleverTabell");
+    console.log(gruppeSelect);
+    console.log(gruppeSelect.value);
+    alleEleverVis.innerHTML = ``;
+    if(gruppeSelect.value == "visAlle"){
+      elever.on("child_added", hentEleverCallback("visEleverTabell"));
+    }else{
+      //Henter først elevene som har valget som 1. valg, så 2. og til slutt 3.
+      elever
+        .orderByChild("Valg1")
+        .equalTo(gruppeSelect.value)
+        .on("child_added", hentEleverCallback("visEleverTabell"));
+      elever
+        .orderByChild("Valg2")
+        .equalTo(gruppeSelect.value)
+        .on("child_added", hentEleverCallback("visEleverTabell"));
+      elever
+        .orderByChild("Valg3")
+        .equalTo(gruppeSelect.value)
+        .on("child_added", hentEleverCallback("visEleverTabell"));
+    }
   }
 
   //Legger til grupper i selectene i tabellene
@@ -317,17 +325,29 @@
     }
   }
 
-  function delayGrupper(){
-    grupper.on("child_added", hentGrupperTilSelect);
-
+  function finnAntall(){
+    let totAntallVis = document.getElementById("totAntallDiv");
+    let totAntall = 0;
+    elever.on("child_added", function () {
+      totAntall++;
+      totAntallVis.innerHTML = `${totAntall}`;
+    });
+    grupper.on("child_added", function (snapshot) {
+      let gruppeKey =snapshot.key;
+      let gruppeAntallDiv = document.getElementById("Antall"+gruppeKey);
+      let gruppeAntall = 0;
+      elever
+        .orderByChild("gruppe")
+        .equalTo(gruppeKey)
+        .on("child_added", function(){
+          gruppeAntall++;
+          gruppeAntallDiv.innerHTML = `${gruppeAntall}`;
+        });
+    })
   }
-  function start(){
-    hentAlleElever();
-    setTimeout(delayGrupper, 5000);
-  }
 
-  start()
-
+  hentAlleElever();
+  finnAntall();
 
 </script>
 </body>
